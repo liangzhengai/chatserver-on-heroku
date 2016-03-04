@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+  </head>
+  <body>
+	<input type="text" id="uid" value="">
+	<input type="text" id="alias" value="">
+	<input type="button" id="btnConnect" value="connect">
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+    <script type="text/javascript" src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script>
+      var socket = io();
+
+	function getUser() {
+		return	{"Id":$("#uid").val(), "Name":$("#alias").val()};
+	}
+	  $("#btnConnect").on("click", function() {
+		  socket.emit('join', getUser(), function(data) {
+			console.log(data);
+		  });
+		});
+      $('form').submit(function(){
+        socket.emit('send message', {"sender":getUser(), "receiver":"@TOALL", "message":$('#m').val()});
+        $('#m').val('');
+        return false;
+      });
+      socket.on('send message', function(msg){
+        $('#messages').append($('<li>').text(msg.sender + ":" + msg.message));
+      });
+      socket.on('join', function(msg){
+		console.log(msg);
+        $('#messages').append($('<li>').text("connect from " + msg.Name));
+      });
+      socket.on('quit', function(msg){
+        $('#messages').append($('<li>').text("disconnect from " + msg.Name));
+      });
+    </script>
+  </body>
+</html>
